@@ -26,13 +26,15 @@ sequences.
 ## Screenshots
 
 ### Homepage
-![Homepage](screenshots/Homepage.png)
+![Homepage](screenshot/Homepage.png)
 
 ### Motif Analysis
-![Analysis](screenshots/Analysis.png)
+![Analysis](screenshot/Analysis.png)
 
 ### Pattern Matching Output
-![Output](screenshots/Output.png)
+![Output](screenshot/Output.png)
+
+
 
 ## 📂 Project Report
 The detailed academic project report is available here:  
