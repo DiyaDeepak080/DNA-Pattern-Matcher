@@ -1,0 +1,1913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DNA Pattern Matcher - Advanced Bioinformatics Tool</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap');
+  
+  * { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+  }
+
+  :root {
+    --bg-primary: #0a0b1a;
+    --bg-secondary: #1a1d3a;
+    --bg-tertiary: #2a2f5a;
+    --bg-card: rgba(26, 29, 58, 0.8);
+    --bg-glass: rgba(255, 255, 255, 0.05);
+    
+    --accent-dna: #00d4ff;
+    --accent-rna: #ff6b6b;
+    --accent-protein: #4ecdc4;
+    --accent-match: #ffd93d;
+    --accent-success: #6bcf7f;
+    --accent-warning: #ffb74d;
+    --accent-error: #f48fb1;
+    
+    --text-primary: #ffffff;
+    --text-secondary: #b8c5d1;
+    --text-muted: #6b7684;
+    --text-accent: var(--accent-dna);
+    
+    --border-primary: rgba(255, 255, 255, 0.1);
+    --border-accent: rgba(0, 212, 255, 0.3);
+    --shadow-primary: 0 8px 32px rgba(0, 0, 0, 0.3);
+    --shadow-glow: 0 0 20px rgba(0, 212, 255, 0.3);
+    
+    --gradient-primary: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
+    --gradient-card: linear-gradient(135deg, var(--bg-card), rgba(42, 47, 90, 0.6));
+    --gradient-accent: linear-gradient(135deg, var(--accent-dna), #0099cc);
+    --gradient-match: linear-gradient(135deg, var(--accent-match), #ffa726);
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--gradient-primary);
+    background-attachment: fixed;
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated background particles */
+  .bg-particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: var(--accent-dna);
+    border-radius: 50%;
+    animation: float 6s ease-in-out infinite;
+    opacity: 0.6;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.6; }
+    50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+  }
+
+  /* Header with DNA helix animation */
+  .header {
+    position: relative;
+    background: rgba(26, 29, 58, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-primary);
+    padding: 1.5rem 2rem;
+    z-index: 100;
+    overflow: hidden;
+  }
+
+  .header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+    animation: shimmer 3s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .dna-helix {
+    width: 48px;
+    height: 48px;
+    position: relative;
+    animation: rotate 4s linear infinite;
+  }
+
+  .dna-strand {
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: var(--gradient-accent);
+    border-radius: 1px;
+    transform-origin: center;
+  }
+
+  .dna-strand:nth-child(1) { transform: rotate(0deg) translateY(-8px); animation: pulse 2s ease-in-out infinite; }
+  .dna-strand:nth-child(2) { transform: rotate(60deg) translateY(-8px); animation: pulse 2s ease-in-out infinite 0.3s; }
+  .dna-strand:nth-child(3) { transform: rotate(120deg) translateY(-8px); animation: pulse 2s ease-in-out infinite 0.6s; }
+
+  @keyframes rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  @keyframes pulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+
+  .logo h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    background: var(--gradient-accent);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    text-shadow: none;
+  }
+
+  .logo .subtitle {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .btn-glass {
+    background: var(--bg-glass);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-primary);
+    color: var(--text-primary);
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+  }
+
+  .btn-glass:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--border-accent);
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-2px);
+  }
+
+  /* Main container with neural network layout */
+  .container {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    min-height: calc(100vh - 100px);
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Left panel - Inputs */
+  .input-panel {
+    background: var(--gradient-card);
+    backdrop-filter: blur(20px);
+    border-right: 1px solid var(--border-primary);
+    padding: 2rem;
+    overflow-y: auto;
+    position: relative;
+  }
+
+  .input-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 1px;
+    height: 100%;
+    background: linear-gradient(to bottom, transparent, var(--accent-dna), transparent);
+    animation: flow 3s ease-in-out infinite;
+  }
+
+  @keyframes flow {
+    0%, 100% { opacity: 0.3; transform: scaleY(0.5); }
+    50% { opacity: 1; transform: scaleY(1); }
+  }
+
+  /* Enhanced form sections */
+  .form-section {
+    background: var(--bg-glass);
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--border-primary);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .form-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--gradient-accent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .form-section:hover::before {
+    opacity: 1;
+  }
+
+  .form-section:hover {
+    border-color: var(--border-accent);
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-2px);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-icon {
+    width: 24px;
+    height: 24px;
+    padding: 8px;
+    background: var(--gradient-accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  /* Motif input with live validation */
+  .motif-container {
+    position: relative;
+  }
+
+  .motif-input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid var(--border-primary);
+    color: var(--text-primary);
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .motif-input:focus {
+    outline: none;
+    border-color: var(--accent-dna);
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  .motif-input.valid {
+    border-color: var(--accent-success);
+    box-shadow: 0 0 20px rgba(107, 207, 127, 0.2);
+  }
+
+  .motif-input.invalid {
+    border-color: var(--accent-error);
+    box-shadow: 0 0 20px rgba(244, 143, 177, 0.2);
+    animation: shake 0.5s ease-in-out;
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+
+  .validation-display {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .validation-display.valid {
+    display: flex;
+    background: rgba(107, 207, 127, 0.1);
+    border: 1px solid rgba(107, 207, 127, 0.3);
+    color: var(--accent-success);
+  }
+
+  .validation-display.invalid {
+    display: flex;
+    background: rgba(244, 143, 177, 0.1);
+    border: 1px solid rgba(244, 143, 177, 0.3);
+    color: var(--accent-error);
+  }
+
+  /* Quick examples with animation */
+  .examples-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .example-chip {
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    color: var(--accent-dna);
+    padding: 0.6rem 1rem;
+    border-radius: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .example-chip::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: radial-gradient(circle, rgba(0, 212, 255, 0.3) 0%, transparent 70%);
+    transition: all 0.3s ease;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .example-chip:hover::before {
+    width: 100px;
+    height: 100px;
+  }
+
+  .example-chip:hover {
+    background: rgba(0, 212, 255, 0.2);
+    border-color: var(--accent-dna);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3);
+  }
+
+  /* Revolutionary file upload design */
+  .file-upload-zone {
+    position: relative;
+    min-height: 200px;
+    border: 2px dashed var(--border-primary);
+    border-radius: 16px;
+    background: rgba(0, 0, 0, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  .file-upload-zone.dragover {
+    border-color: var(--accent-dna);
+    background: rgba(0, 212, 255, 0.05);
+    box-shadow: inset 0 0 30px rgba(0, 212, 255, 0.2);
+    transform: scale(1.02);
+  }
+
+  .file-upload-zone.has-file {
+    border-color: var(--accent-success);
+    background: rgba(107, 207, 127, 0.05);
+  }
+
+  .file-input-hidden {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+  }
+
+  .upload-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .upload-icon-container {
+    margin-bottom: 1rem;
+    position: relative;
+  }
+
+  .upload-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto;
+    background: var(--gradient-accent);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: levitate 3s ease-in-out infinite;
+    box-shadow: 0 8px 32px rgba(0, 212, 255, 0.3);
+  }
+
+  @keyframes levitate {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .upload-text {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .upload-subtext {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  .file-info-card {
+    display: none;
+    background: rgba(107, 207, 127, 0.1);
+    border: 1px solid rgba(107, 207, 127, 0.3);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-top: 1rem;
+    animation: slideInUp 0.3s ease;
+  }
+
+  .file-info-card.visible {
+    display: block;
+  }
+
+  @keyframes slideInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .file-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .file-name {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent-success);
+    font-weight: 500;
+  }
+
+  .file-size {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+
+  /* Advanced submit button */
+  .submit-button {
+    width: 100%;
+    background: var(--gradient-accent);
+    border: none;
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 16px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 212, 255, 0.4);
+  }
+
+  .submit-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.6s ease;
+  }
+
+  .submit-button:hover::before {
+    left: 100%;
+  }
+
+  .submit-button:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 12px 40px rgba(0, 212, 255, 0.6);
+  }
+
+  .submit-button:disabled {
+    background: var(--border-primary);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .submit-button:disabled::before {
+    display: none;
+  }
+
+  /* Right panel - Results and visualizations */
+  .results-panel {
+    background: rgba(10, 11, 26, 0.8);
+    backdrop-filter: blur(20px);
+    padding: 2rem;
+    overflow-y: auto;
+    position: relative;
+  }
+
+  /* Neural network visualization tabs */
+  .viz-nav {
+    display: flex;
+    background: var(--bg-glass);
+    backdrop-filter: blur(15px);
+    border-radius: 16px;
+    padding: 0.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-primary);
+  }
+
+  .viz-nav-item {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .viz-nav-item.active {
+    background: var(--gradient-accent);
+    color: white;
+    box-shadow: 0 4px 16px rgba(0, 212, 255, 0.3);
+  }
+
+  .viz-nav-item:not(.active):hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+  }
+
+  /* Visualization containers */
+  .viz-container {
+    background: var(--gradient-card);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-primary);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+    min-height: 400px;
+  }
+
+  .viz-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--gradient-accent);
+    opacity: 0.5;
+  }
+
+  .viz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .viz-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .viz-controls {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .control-btn {
+    background: var(--bg-glass);
+    border: 1px solid var(--border-primary);
+    color: var(--text-secondary);
+    padding: 0.6rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .control-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--border-accent);
+    color: var(--text-primary);
+  }
+
+  .viz-content {
+    display: none;
+    position: relative;
+    min-height: 300px;
+  }
+
+  .viz-content.active {
+    display: block;
+  }
+
+  .viz-image {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-primary);
+    transition: all 0.3s ease;
+  }
+
+  .viz-image:hover {
+    border-color: var(--border-accent);
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
+  }
+
+  /* Results section with advanced styling */
+  .results-section {
+    background: var(--gradient-card);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-primary);
+    border-radius: 20px;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+
+  .results-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: var(--gradient-accent);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+
+  .stats-container {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .stat-card {
+    background: var(--bg-glass);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-primary);
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+    min-width: 100px;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent-dna);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 0.25rem;
+  }
+
+  /* Enhanced result cards */
+  .result-item {
+    background: var(--bg-glass);
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--border-primary);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .result-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--gradient-match);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .result-item:hover {
+    border-color: var(--border-accent);
+    box-shadow: 0 8px 32px rgba(0, 212, 255, 0.1);
+    transform: translateY(-2px);
+  }
+
+  .result-item:hover::before {
+    opacity: 1;
+  }
+
+  .result-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+  }
+
+  .sequence-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    max-width: 70%;
+    word-break: break-all;
+  }
+
+  .match-badge {
+    background: var(--gradient-match);
+    color: #000;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(255, 217, 61, 0.3);
+  }
+
+  .match-badge.zero {
+    background: var(--border-primary);
+    color: var(--text-muted);
+    box-shadow: none;
+  }
+
+  /* Positions display with interactive tags */
+  .positions-section {
+    margin: 1rem 0;
+  }
+
+  .positions-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 0.5rem;
+    max-height: 150px;
+    overflow-y: auto;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-dna) transparent;
+  }
+
+  .positions-container::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .positions-container::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .positions-container::-webkit-scrollbar-thumb {
+    background: var(--accent-dna);
+    border-radius: 3px;
+  }
+
+  .position-chip {
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    color: var(--accent-dna);
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .position-chip:hover {
+    background: var(--accent-dna);
+    color: #000;
+    transform: scale(1.05);
+  }
+
+  /* Sequence examples with syntax highlighting */
+  .examples-section {
+    margin-top: 1.5rem;
+  }
+
+  .example-sequence {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 0.5rem 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    word-break: break-all;
+    position: relative;
+    overflow-x: auto;
+  }
+
+  .sequence-highlight {
+    background: var(--gradient-match);
+    color: #000;
+    padding: 0 3px;
+    border-radius: 4px;
+    font-weight: 700;
+    box-shadow: 0 0 10px rgba(255, 217, 61, 0.5);
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+
+  @keyframes glow {
+    from { box-shadow: 0 0 5px rgba(255, 217, 61, 0.5); }
+    to { box-shadow: 0 0 15px rgba(255, 217, 61, 0.8); }
+  }
+
+  /* Loading states */
+  .loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 11, 26, 0.9);
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+    z-index: 10;
+  }
+
+  .dna-loader {
+    width: 60px;
+    height: 60px;
+    position: relative;
+    animation: rotate 2s linear infinite;
+  }
+
+  .dna-base {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  .dna-base:nth-child(1) { background: #ff6b6b; top: 0; left: 26px; animation-delay: 0s; }
+  .dna-base:nth-child(2) { background: #4ecdc4; top: 15px; right: 0; animation-delay: 0.2s; }
+  .dna-base:nth-child(3) { background: #45b7d1; bottom: 15px; right: 0; animation-delay: 0.4s; }
+  .dna-base:nth-child(4) { background: #f9ca24; bottom: 0; left: 26px; animation-delay: 0.6s; }
+  .dna-base:nth-child(5) { background: #6c5ce7; top: 15px; left: 0; animation-delay: 0.8s; }
+  .dna-base:nth-child(6) { background: #a29bfe; bottom: 15px; left: 0; animation-delay: 1s; }
+
+  .loading-text {
+    margin-top: 1.5rem;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    font-weight: 500;
+    text-align: center;
+  }
+
+  .progress-dots {
+    margin-top: 0.5rem;
+  }
+
+  .progress-dots span {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-dna);
+    margin: 0 2px;
+    animation: bounce 1.4s ease-in-out infinite both;
+  }
+
+  .progress-dots span:nth-child(1) { animation-delay: -0.32s; }
+  .progress-dots span:nth-child(2) { animation-delay: -0.16s; }
+  .progress-dots span:nth-child(3) { animation-delay: 0s; }
+
+  @keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--text-muted);
+  }
+
+  .empty-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1rem;
+    opacity: 0.5;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .empty-title {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+  }
+
+  .empty-description {
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  /* Responsive design */
+  @media (max-width: 1400px) {
+    .container {
+      grid-template-columns: 380px 1fr;
+    }
+  }
+
+  @media (max-width: 1200px) {
+    .container {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+    }
+    
+    .input-panel {
+      border-right: none;
+      border-bottom: 1px solid var(--border-primary);
+    }
+    
+    .input-panel::before {
+      display: none;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .header-content {
+      flex-direction: column;
+      gap: 1rem;
+      text-align: center;
+    }
+    
+    .logo h1 {
+      font-size: 1.5rem;
+    }
+    
+    .input-panel, .results-panel {
+      padding: 1rem;
+    }
+    
+    .examples-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .stats-container {
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .positions-container {
+      grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    }
+  }
+
+  /* Accessibility improvements */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* Focus management */
+  *:focus {
+    outline: 2px solid var(--accent-dna);
+    outline-offset: 2px;
+  }
+
+  button:focus,
+  input:focus {
+    outline-color: var(--accent-dna);
+  }
+</style>
+</head>
+<body>
+  <!-- Animated background particles -->
+  <div class="bg-particles" id="particles"></div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <div class="logo">
+        <div class="dna-helix">
+          <div class="dna-strand"></div>
+          <div class="dna-strand"></div>
+          <div class="dna-strand"></div>
+        </div>
+        <div>
+          <h1>DNA Pattern Matcher</h1>
+          <div class="subtitle">Advanced Bioinformatics Analysis Tool</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn-glass" onclick="showHelp()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/>
+          </svg>
+          Help
+        </button>
+        <button class="btn-glass" onclick="toggleTheme()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 18c-.89 0-1.74-.19-2.5-.54C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.46C10.26 6.19 11.11 6 12 6a6 6 0 1 1 0 12z"/>
+          </svg>
+          Theme
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Input Panel -->
+    <div class="input-panel">
+      <form id="analysisForm">
+        <!-- Motif Pattern Section -->
+        <div class="form-section">
+          <div class="section-header">
+            <div class="section-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+            </div>
+            <h3 class="section-title">Motif Pattern</h3>
+          </div>
+          
+          <div class="motif-container">
+            <input 
+              type="text" 
+              id="motifInput" 
+              class="motif-input"
+              placeholder="Enter DNA motif (e.g., ATGNN[CT]R)"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <div id="validationDisplay" class="validation-display"></div>
+          </div>
+
+          <div style="margin-top: 1rem;">
+            <label style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.75rem; display: block;">
+              Quick Templates:
+            </label>
+            <div class="examples-grid">
+            <div class="example-chip" data-motif="TCGA">TCGA</div>
+            <div class="example-chip" data-motif="CGT">CGT</div>
+            <div class="example-chip" data-motif="ATATG">ATATG</div>
+            <div class="example-chip" data-motif="GGC">GGC</div>
+            <div class="example-chip" data-motif="AGTA">AGTA</div>
+            <div class="example-chip" data-motif="TACG">TACG</div>
+        </div>
+
+          </div>
+        </div>
+
+        <!-- FASTA Upload Section -->
+        <div class="form-section">
+          <div class="section-header">
+            <div class="section-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+              </svg>
+            </div>
+            <h3 class="section-title">FASTA Sequences</h3>
+          </div>
+
+          <div class="file-upload-zone" id="uploadZone">
+            <input type="file" id="fastaInput" class="file-input-hidden" accept=".fa,.fasta,.txt" />
+            <div class="upload-content">
+              <div class="upload-icon-container">
+                <div class="upload-icon">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
+                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="upload-text">Drop FASTA file here</div>
+              <div class="upload-subtext">or click to browse â€¢ .fa, .fasta, .txt supported</div>
+            </div>
+          </div>
+
+          <div id="fileInfoCard" class="file-info-card">
+            <div class="file-details">
+              <div>
+                <div class="file-name" id="selectedFileName">file.fasta</div>
+                <div class="file-size" id="selectedFileSize">0 KB</div>
+              </div>
+              <button type="button" onclick="clearFile()" style="background: none; border: none; color: var(--accent-error); cursor: pointer; padding: 0.5rem;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="submit-button" id="submitButton">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8,5.14V19.14L19,12.14L8,5.14Z"/>
+          </svg>
+          Analyze Sequences
+        </button>
+      </form>
+    </div>
+
+    <!-- Results Panel -->
+    <div class="results-panel">
+      <!-- Visualization Navigation -->
+      <div class="viz-nav">
+        <button class="viz-nav-item active" onclick="switchViz('nfa')">NFA Graph</button>
+        <button class="viz-nav-item" onclick="switchViz('dfa')">DFA Graph</button>
+      </div>
+
+      <!-- NFA Visualization -->
+      <div id="nfaViz" class="viz-container">
+        <div class="viz-header">
+          <h3 class="viz-title">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--accent-dna)">
+              <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9Z"/>
+            </svg>
+            Non-Deterministic Finite Automaton
+          </h3>
+          <div class="viz-controls">
+            <button class="control-btn" onclick="zoomImage('nfa', 1.2)" title="Zoom In">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M15.5,14H14.71L14.43,13.73C15.41,12.59 16,11.11 16,9.5C16,5.91 13.09,3 9.5,3S3,5.91 3,9.5 5.91,16 9.5,16C11.11,16 12.59,15.41 13.73,14.43L14,14.71V15.5L19,20.49L20.49,19L15.5,14M9.5,14C7,14 5,12 5,9.5S7,5 9.5,5 14,7 14,9.5 12,14 9.5,14M12,10H10V12H9V10H7V9H9V7H10V9H12V10Z"/>
+              </svg>
+            </button>
+            <button class="control-btn" onclick="zoomImage('nfa', 0.8)" title="Zoom Out">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M15.5,14H14.71L14.43,13.73C15.41,12.59 16,11.11 16,9.5C16,5.91 13.09,3 9.5,3S3,5.91 3,9.5 5.91,16 9.5,16C11.11,16 12.59,15.41 13.73,14.43L14,14.71V15.5L19,20.49L20.49,19L15.5,14M9.5,14C7,14 5,12 5,9.5S7,5 9.5,5 14,7 14,9.5 12,14 9.5,14M7,9V10H12V9H7Z"/>
+              </svg>
+            </button>
+            <button class="control-btn" onclick="resetZoom('nfa')" title="Reset">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <div class="viz-content active" id="nfaContent">
+          <img id="nfaImage" class="viz-image" alt="NFA Diagram" style="display: none;" />
+          <div class="empty-state" id="nfaEmpty">
+            <svg class="empty-icon" viewBox="0 0 24 24" fill="var(--text-muted)">
+              <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9Z"/>
+            </svg>
+            <div class="empty-title">NFA Visualization</div>
+            <div class="empty-description">Enter a motif pattern to generate the Non-Deterministic Finite Automaton diagram</div>
+          </div>
+        </div>
+        <div class="loading-overlay" id="nfaLoading" style="display: none;">
+          <div class="dna-loader">
+            <div class="dna-base"></div>
+            <div class="dna-base"></div>
+            <div class="dna-base"></div>
+            <div class="dna-base"></div>
+            <div class="dna-base"></div>
+            <div class="dna-base"></div>
+          </div>
+          <div class="loading-text">Generating NFA...</div>
+        </div>
+      </div>
+
+      <!-- DFA Visualization -->
+      <div id="dfaViz" class="viz-container" style="display: none;">
+        <div class="viz-header">
+          <h3 class="viz-title">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--accent-dna)">
+              <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9Z"/>
+            </svg>
+            Deterministic Finite Automaton
+          </h3>
+          <div class="viz-controls">
+            <button class="control-btn" onclick="zoomImage('dfa', 1.2)" title="Zoom In">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M15.5,14H14.71L14.43,13.73C15.41,12.59 16,11.11 16,9.5C16,5.91 13.09,3 9.5,3S3,5.91 3,9.5 5.91,16 9.5,16C11.11,16 12.59,15.41 13.73,14.43L14,14.71V15.5L19,20.49L20.49,19L15.5,14M9.5,14C7,14 5,12 5,9.5S7,5 9.5,5 14,7 14,9.5 12,14 9.5,14M12,10H10V12H9V10H7V9H9V7H10V9H12V10Z"/>
+              </svg>
+            </button>
+            <button class="control-btn" onclick="zoomImage('dfa', 0.8)" title="Zoom Out">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M15.5,14H14.71L14.43,13.73C15.41,12.59 16,11.11 16,9.5C16,5.91 13.09,3 9.5,3S3,5.91 3,9.5 5.91,16 9.5,16C11.11,16 12.59,15.41 13.73,14.43L14,14.71V15.5L19,20.49L20.49,19L15.5,14M9.5,14C7,14 5,12 5,9.5S7,5 9.5,5 14,7 14,9.5 12,14 9.5,14M7,9V10H12V9H7Z"/>
+              </svg>
+            </button>
+            <button class="control-btn" onclick="resetZoom('dfa')" title="Reset">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="viz-content active" id="dfaContent">
+          <img id="dfaImage" class="viz-image" alt="DFA Diagram" style="display: none;" />
+          <div class="empty-state" id="dfaEmpty">
+            <svg class="empty-icon" viewBox="0 0 24 24" fill="var(--text-muted)">
+              <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9Z"/>
+            </svg>
+            <div class="empty-title">DFA Visualization</div>
+            <div class="empty-description">Enter a motif pattern to generate the Deterministic Finite Automaton diagram</div>
+          </div>
+        </div>
+        <div class="loading-overlay" id="dfaLoading" style="display: none;">
+          <div class="dna-loader">
+            <div class="dna-base"></div>
+            <div class="dna-base"></div>
+            <div class="dna-base"></div>
+            <div class="dna-base"></div>
+            <div class="dna-base"></div>
+            <div class="dna-base"></div>
+          </div>
+          <div class="loading-text">Generating DFA...</div>
+        </div>
+      </div>
+      
+      <!-- Results Section -->
+      <div class="results-section">
+        <div class="results-header">
+          <h3 class="results-title">Analysis Results</h3>
+          <div class="stats-container" id="statsContainer" style="display: none;">
+            <div class="stat-card">
+              <div class="stat-value" id="totalSequences">0</div>
+              <div class="stat-label">Sequences</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="totalMatches">0</div>
+              <div class="stat-label">Total Matches</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="matchRate">0%</div>
+              <div class="stat-label">Success Rate</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="resultsContainer">
+          <div class="empty-state">
+            <svg class="empty-icon" viewBox="0 0 24 24" fill="var(--text-muted)">
+              <path d="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M7,6H17V19H7V6M9,8V17H11V8H9M13,8V17H15V8H13Z"/>
+            </svg>
+            <div class="empty-title">No Results Yet</div>
+            <div class="empty-description">Upload a FASTA file and enter a motif pattern to start pattern matching analysis</div>
+          </div>
+        </div>
+
+        <div class="loading-overlay" id="resultsLoading" style="display: none;">
+          <div class="dna-loader">
+            <div class="dna-base"></div>
+            <div class="dna-base"></div>
+            <div class="dna-base"></div>
+            <div class="dna-base"></div>
+            <div class="dna-base"></div>
+            <div class="dna-base"></div>
+          </div>
+          <div class="loading-text">Analyzing sequences</div>
+          <div class="progress-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// Global variables
+const API_BASE = 'http://127.0.0.1:8000';
+let currentZoom = { nfa: 1, dfa: 1 };
+const fastaInput = document.getElementById('fastaInput');
+const selectedFileName = document.getElementById('selectedFileName');
+const selectedFileSize = document.getElementById('selectedFileSize');
+const fileInfoCard = document.getElementById('fileInfoCard');
+
+function formatFileSize(bytes) {
+  if (bytes === 0) return '0 KB';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function updateFileInfo() {
+  if (fastaInput.files.length > 0) {
+    const file = fastaInput.files[0];
+    selectedFileName.textContent = file.name;
+    selectedFileSize.textContent = formatFileSize(file.size);
+    fileInfoCard.style.display = 'block';  // show info section if hidden
+  } else {
+    selectedFileName.textContent = 'file.fasta';
+    selectedFileSize.textContent = '0 KB';
+    fileInfoCard.style.display = 'none';  // hide info section if no file
+  }
+}
+
+
+
+
+// Drag & drop logic
+uploadZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  uploadZone.classList.add('dragover');
+});
+
+uploadZone.addEventListener('dragleave', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('dragover');
+});
+
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('dragover');
+  if (e.dataTransfer.files.length > 0) {
+    fastaInput.files = e.dataTransfer.files;
+    handleFileSelect();
+  }
+});
+
+uploadZone.addEventListener('click', (e) => {
+  console.log("Upload zone click, files length:", fastaInput.files.length);
+  if (e.target.closest('.file-info-card') || e.target.closest('.clear-button')) {
+    console.log("Click on info card or clear btn - ignoring");
+    return;
+  }
+  if (fastaInput.files.length === 0) {
+    console.log("Opening file dialog");
+    fastaInput.click();
+  } else {
+    console.log("File already selected - not opening dialog");
+  }
+});
+
+
+
+
+// Motif validation
+function validateMotif(motif) {
+  if (!motif) return { isValid: false, message: '' };
+  
+  const validPattern = /^[ATGCNRYSWKMDHBV\[\]]+$/i;
+  const hasValidStructure = /^[ATGCNRYSWKMDHBV\[\]]*$/i.test(motif);
+  
+  if (!hasValidStructure) {
+    return { 
+      isValid: false, 
+      message: 'âš ï¸ Invalid characters. Use ATGC, IUPAC codes, or [brackets]' 
+    };
+  }
+  
+  if (motif.length < 3) {
+    return { 
+      isValid: false, 
+      message: 'âš ï¸ Motif should be at least 3 characters long' 
+    };
+  }
+  
+  return { 
+    isValid: true, 
+    message: `eg:AT...Valid motif pattern (${motif.length} positions)` 
+  };
+}
+
+// Update validation display
+function updateValidation() {
+  const motif = motifInput.value.trim().toUpperCase();
+  const validation = validateMotif(motif);
+  const validationDisplay = document.getElementById('validationDisplay');
+  
+  if (!motif) {
+    motifInput.className = 'motif-input';
+    validationDisplay.style.display = 'none';
+    return;
+  }
+  
+  if (validation.isValid) {
+    motifInput.className = 'motif-input valid';
+    validationDisplay.className = 'validation-display valid';
+    validationDisplay.innerHTML = `
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+      </svg>
+      ${validation.message}
+    `;
+  } else {
+    motifInput.className = 'motif-input invalid';
+    validationDisplay.className = 'validation-display invalid';
+    validationDisplay.innerHTML = `
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12,2C17.53,2 22,6.47 22,12C22,17.53 17.53,22 12,22C6.47,22 2,17.53 2,12C2,6.47 6.47,2 12,2M15.59,7L12,10.59L8.41,7L7,8.41L10.59,12L7,15.59L8.41,17L12,13.41L15.59,17L17,15.59L13.41,12L17,8.41L15.59,7Z"/>
+      </svg>
+      ${validation.message}
+    `;
+  }
+}
+
+// File handling functions
+function formatFileSize(bytes) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function handleFileSelect() {
+  const file = fastaInput.files[0];
+  if (file) {
+    document.getElementById('selectedFileName').textContent = file.name;
+    document.getElementById('selectedFileSize').textContent = formatFileSize(file.size);
+    fileInfoCard.classList.add('visible');
+    uploadZone.classList.add('has-file');
+  }
+}
+
+function clearFile() {
+  fastaInput.value = '';
+  fileInfoCard.classList.remove('visible');
+  uploadZone.classList.remove('has-file');
+}
+
+// Example functions
+function useExample(motif) {
+  motifInput.value = motif;
+  updateValidation();
+  motifInput.focus();
+  
+  // Add visual feedback
+  motifInput.style.animation = 'none';
+  setTimeout(() => {
+    motifInput.style.animation = 'glow 0.5s ease-in-out';
+  }, 10);
+}
+
+// Add event listeners for example chips
+function initializeExampleChips() {
+  document.querySelectorAll('.example-chip').forEach(chip => {
+    chip.addEventListener('click', function() {
+      const motif = this.getAttribute('data-motif');
+      useExample(motif);
+      
+      // Add click animation
+      this.style.transform = 'scale(0.95)';
+      setTimeout(() => {
+        this.style.transform = '';
+      }, 150);
+    });
+  });
+}
+
+// Visualization functions
+function switchViz(type) {
+  // Update nav buttons
+  document.querySelectorAll('.viz-nav-item').forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`[onclick="switchViz('${type}')"]`).classList.add('active');
+  
+  // Update containers
+  document.getElementById('nfaViz').style.display = type === 'nfa' ? 'block' : 'none';
+  document.getElementById('dfaViz').style.display = type === 'dfa' ? 'block' : 'none';
+}
+
+function zoomImage(type, factor) {
+  currentZoom[type] *= factor;
+  currentZoom[type] = Math.max(0.5, Math.min(3, currentZoom[type]));
+  
+  const img = document.getElementById(type + 'Image');
+  img.style.transform = `scale(${currentZoom[type]})`;
+  img.style.transformOrigin = 'center';
+}
+
+function resetZoom(type) {
+  currentZoom[type] = 1;
+  const img = document.getElementById(type + 'Image');
+  img.style.transform = 'scale(1)';
+}
+
+// Results display
+function displayResults(results, motif) {
+  const container = document.getElementById('resultsContainer');
+  const statsContainer = document.getElementById('statsContainer');
+  
+  // Calculate statistics
+  const totalSequences = results.length;
+  const totalMatches = results.reduce((sum, r) => sum + r.count, 0);
+  const sequencesWithMatches = results.filter(r => r.count > 0).length;
+  const successRate = totalSequences > 0 ? Math.round((sequencesWithMatches / totalSequences) * 100) : 0;
+  
+  // Update statistics
+  document.getElementById('totalSequences').textContent = totalSequences;
+  document.getElementById('totalMatches').textContent = totalMatches.toLocaleString();
+  document.getElementById('matchRate').textContent = successRate + '%';
+  statsContainer.style.display = 'flex';
+  
+  if (results.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <svg class="empty-icon" viewBox="0 0 24 24" fill="var(--text-muted)">
+          <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M13,17H11V15H13V17M13,13H11V7H13V13Z"/>
+        </svg>
+        <div class="empty-title">No Sequences Found</div>
+        <div class="empty-description">The uploaded file doesn't contain any valid FASTA sequences</div>
+      </div>
+    `;
+    return;
+  }
+  
+  // Generate results HTML
+  container.innerHTML = results.map(result => {
+    const matchBadgeClass = result.count > 0 ? 'match-badge' : 'match-badge zero';
+    const density = result.length > 0 ? (result.count / result.length * 1000).toFixed(2) : '0.00';
+    
+    return `
+      <div class="result-item">
+        <div class="result-header-row">
+          <div class="sequence-id">${result.header}</div>
+          <div class="${matchBadgeClass}">
+            ${result.count} match${result.count !== 1 ? 'es' : ''}
+          </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin: 1rem 0; color: var(--text-secondary); font-size: 0.9rem;">
+          <div><strong style="color: var(--text-primary);">${result.length.toLocaleString()}</strong> bp</div>
+          <div><strong style="color: var(--text-primary);">${density}</strong> /kb</div>
+          <div><strong style="color: var(--text-primary);">${result.positions.length}</strong> positions</div>
+        </div>
+        
+        ${result.positions.length > 0 ? `
+          <div class="positions-section">
+            <div style="margin-bottom: 0.75rem; color: var(--text-primary); font-weight: 600;">
+              Match Positions (0-based):
+            </div>
+            <div class="positions-container">
+              ${result.positions.slice(0, 30).map(pos => `
+                <div class="position-chip" onclick="highlightPosition(${pos})">${pos}</div>
+              `).join('')}
+              ${result.positions.length > 30 ? `
+                <div class="position-chip" style="background: var(--text-muted); border-color: var(--text-muted); color: var(--bg-primary);">
+                  +${result.positions.length - 30} more
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        ` : ''}
+        
+        ${result.examples && result.examples.length > 0 ? `
+          <div class="examples-section">
+            <div style="margin-bottom: 0.75rem; color: var(--text-primary); font-weight: 600;">
+              Sequence Context:
+            </div>
+            ${result.examples.slice(0, 3).map(example => {
+              // Enhanced highlighting with regex escape
+              const escapedMotif = motif.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              const highlighted = example.replace(new RegExp(escapedMotif, 'gi'), 
+                match => `<span class="sequence-highlight">${match}</span>`);
+              return `<div class="example-sequence">${highlighted}</div>`;
+            }).join('')}
+            ${result.examples.length > 3 ? `
+              <div style="text-align: center; margin-top: 1rem; color: var(--text-muted); font-size: 0.9rem;">
+                ... and ${result.examples.length - 3} more examples
+              </div>
+            ` : ''}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function highlightPosition(position) {
+  // Add animation effect when position is clicked
+  event.target.style.animation = 'none';
+  setTimeout(() => {
+    event.target.style.animation = 'glow 1s ease-in-out';
+  }, 10);
+}
+
+// Form submission handler
+async function handleSubmit(event) {
+  event.preventDefault();
+  
+  const motif = motifInput.value.trim();
+  const file = fastaInput.files[0];
+  
+  if (!motif || !file) {
+    return;
+  }
+  
+  const validation = validateMotif(motif);
+  if (!validation.isValid) {
+    return;
+  }
+  
+  // Show loading states
+  document.getElementById('resultsLoading').style.display = 'flex';
+  document.getElementById('nfaLoading').style.display = 'flex';
+  document.getElementById('dfaLoading').style.display = 'flex';
+  
+  // Disable submit button
+  submitButton.disabled = true;
+  submitButton.innerHTML = `
+    <div style="width: 24px; height: 24px; border: 2px solid transparent; border-top: 2px solid white; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+    Processing...
+  `;
+  
+  try {
+    // Load visualization diagrams
+    const nfaImg = document.getElementById('nfaImage');
+    const dfaImg = document.getElementById('dfaImage');
+    
+    nfaImg.src = `${API_BASE}/nfa.svg?motif=${encodeURIComponent(motif)}`;
+    dfaImg.src = `${API_BASE}/dfa.svg?motif=${encodeURIComponent(motif)}`;
+    
+    // Show images and hide empty states when loaded
+    nfaImg.onload = () => {
+      document.getElementById('nfaEmpty').style.display = 'none';
+      nfaImg.style.display = 'block';
+      document.getElementById('nfaLoading').style.display = 'none';
+      nfaImg.style.display = 'block';
+      document.getElementById('nfaLoading').style.display = 'none';
+    };
+    
+    dfaImg.onload = () => {
+      document.getElementById('dfaEmpty').style.display = 'none';
+      dfaImg.style.display = 'block';
+      document.getElementById('dfaLoading').style.display = 'none';
+    };
+    
+    // Submit analysis request
+    const formData = new FormData();
+    formData.append('motif', motif);
+    formData.append('fasta', file);
+    
+    const response = await fetch(`${API_BASE}/match`, {
+      method: 'POST',
+      body: formData
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.detail || 'Analysis failed');
+    }
+    
+    // Display results
+    displayResults(data.results, motif);
+    
+  } catch (error) {
+    console.error('Analysis error:', error);
+    document.getElementById('resultsContainer').innerHTML = `
+      <div style="background: rgba(244, 143, 177, 0.1); border: 1px solid rgba(244, 143, 177, 0.3); border-radius: 12px; padding: 2rem; text-align: center;">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="var(--accent-error)" style="margin-bottom: 1rem;">
+          <path d="M12,2C17.53,2 22,6.47 22,12C22,17.53 17.53,22 12,22C6.47,22 2,17.53 2,12C2,6.47 6.47,2 12,2M15.59,7L12,10.59L8.41,7L7,8.41L10.59,12L7,15.59L8.41,17L12,13.41L15.59,17L17,15.59L13.41,12L17,8.41L15.59,7Z"/>
+        </svg>
+        <div style="color: var(--accent-error); font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem;">
+          Analysis Failed
+        </div>
+        <div style="color: var(--text-secondary);">
+          ${error.message}
+        </div>
+      </div>
+    `;
+  } finally {
+    // Reset loading states
+    document.getElementById('resultsLoading').style.display = 'none';
+    document.getElementById('nfaLoading').style.display = 'none';
+    document.getElementById('dfaLoading').style.display = 'none';
+    
+    // Re-enable submit button
+    submitButton.disabled = false;
+    submitButton.innerHTML = `
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M8,5.14V19.14L19,12.14L8,5.14Z"/>
+      </svg>
+      Analyze Sequences
+    `;
+  }
+}
+
+// Utility functions
+function showHelp() {
+  // Create and show help modal
+  const modal = document.createElement('div');
+  modal.style.cssText = `
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+    background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+    display: flex; align-items: center; justify-content: center; 
+    z-index: 1000; padding: 2rem;
+  `;
+  function closeHelp() {
+  document.getElementById('helpDialog').style.display = 'none';
+  // Show main content again
+  document.getElementById('mainContent').style.display = 'block';
+}
+  
+  modal.innerHTML = `
+    <div style="background: var(--gradient-card); backdrop-filter: blur(20px); border: 1px solid var(--border-primary); border-radius: 20px; padding: 2rem; max-width: 800px; max-height: 90vh; overflow-y: auto;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h2 style="color: var(--text-primary); font-size: 1.5rem;">Pattern Matching Help</h2>
+        <button onclick="this.closest('div').parentElement.remove()" style="background: none; border: none; color: var(--text-muted); font-size: 2rem; cursor: pointer; padding: 0.5rem;">&times;</button>
+      </div>
+      
+      <div style="color: var(--text-secondary); line-height: 1.6;">
+        <h3 style="color: var(--accent-dna); margin: 1.5rem 0 1rem 0; font-size: 1.2rem;">Motif Pattern Syntax</h3>
+        <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; font-family: 'JetBrains Mono', monospace;">
+          <strong style="color: var(--text-primary);">Basic nucleotides:</strong> A, T, G, C<br>
+          <strong style="color: var(--text-primary);">IUPAC codes:</strong> N(any), R(A/G), Y(C/T), S(G/C), W(A/T), K(G/T), M(A/C)<br>
+          <strong style="color: var(--text-primary);">Character classes:</strong> [AT] (A or T), [GC] (G or C)<br>
+          <strong style="color: var(--text-primary);">Example:</strong> ATGNN[CT] matches ATG + any 2 bases + (C or T)
+        </div>
+        
+        <h3 style="color: var(--accent-dna); margin: 1.5rem 0 1rem 0; font-size: 1.2rem;">File Requirements</h3>
+        <ul style="margin-left: 1.5rem; margin-bottom: 1rem;">
+          <li>Upload FASTA format files (.fa, .fasta, .txt)</li>
+          <li>Each sequence must have a header line starting with '>'</li>
+          <li>Sequence data should contain only valid nucleotide characters</li>
+        </ul>
+        
+        <h3 style="color: var(--accent-dna); margin: 1.5rem 0 1rem 0; font-size: 1.2rem;">Understanding Results</h3>
+        <ul style="margin-left: 1.5rem;">
+          <li><strong>Positions:</strong> 0-based indexing (first position = 0)</li>
+          <li><strong>Density:</strong> Matches per kilobase of sequence</li>
+          <li><strong>Context:</strong> Sequence examples showing highlighted matches</li>
+          <li><strong>Automata:</strong> Visual graphs of pattern matching logic</li>
+        </ul>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+}
+
+function toggleTheme() {
+  // Theme switching functionality
+  document.body.style.filter = document.body.style.filter === 'hue-rotate(180deg)' ? '' : 'hue-rotate(180deg)';
+}
+
+// Event listeners
+motifInput.addEventListener('input', updateValidation);
+fastaInput.addEventListener('change', handleFileSelect);
+analysisForm.addEventListener('submit', handleSubmit);
+
+// Drag and drop functionality
+uploadZone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  uploadZone.classList.add('dragover');
+});
+
+
+uploadZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  uploadZone.classList.remove('dragover');
+  if (e.dataTransfer.files.length > 0) {
+    fastaInput.files = e.dataTransfer.files;
+    handleFileSelect();
+  }
+});
+
+uploadZone.addEventListener('click', () => {
+  fastaInput.click();
+});
+
+// Initialize the application
+document.addEventListener('DOMContentLoaded', () => {
+  initParticles();
+  updateValidation();
+});
+
+// Add CSS animation keyframes
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+`;
+document.head.appendChild(style);
+// Function to update motif input with clicked template
+function useExample(motif) {
+  const motifInput = document.getElementById('motifInput');
+  motifInput.value = motif;
+  motifInput.focus();
+  updateValidation(); // Call your existing validation function if available
+}
+
+// Add event listeners to example chips
+document.querySelectorAll('.example-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    useExample(chip.getAttribute('data-motif'));
+    // Optional visual click feedback
+    chip.style.transform = "scale(0.95)";
+    setTimeout(() => chip.style.transform = "", 150);
+  });
+  chip.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      chip.click();
+    }
+  });
+});
+
+</script>
+</body>
+</html>
