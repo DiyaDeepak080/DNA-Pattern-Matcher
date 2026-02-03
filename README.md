@@ -23,6 +23,16 @@ sequences.
 - Finite Automata (NFA & DFA)
 - Graphviz
 - HTML, CSS, JavaScript
+## Screenshots
+
+### Homepage
+![Homepage](screenshots/Homepage.png)
+
+### Motif Analysis
+![Analysis](screenshots/Analysis.png)
+
+### Pattern Matching Output
+![Output](screenshots/Output.png)
 
 ## 📂 Project Report
 The detailed academic project report is available here:  
