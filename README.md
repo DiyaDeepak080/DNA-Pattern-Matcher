@@ -31,8 +31,14 @@ sequences.
 ### Motif Analysis
 ![Analysis](screenshot/Analysis.png)
 
-### Pattern Matching Output
-![Output](screenshot/Output.png)
+### NFA Visualization Output
+![NFA Output](screenshot/NFA_Outputs.png)
+
+### DFA Visualization Output
+![DFA Output](screenshot/DFA_Outputs.png)
+
+
+
 
 
 
